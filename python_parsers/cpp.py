@@ -10,7 +10,7 @@ class Cpp:
     parsed = None
     path = None
 
-    def __init__(self, path, parsed,issues=None) -> None:
+    def __init__(self, path, parsed, issues=None) -> None:
         self.path = path
         self.parsed = parsed
         self.issues = issues
@@ -191,7 +191,7 @@ class Cpp:
             case "type":
                 content = list(zip(content.keys(), content.values()))[0]
                 id = hash(content[0]) - hash(content[1]["name"])
-                if len(content[1]["type"])!=0:
+                if len(content[1]["type"]) != 0:
 
                     self.viz["elements"]["edges"].append(
                         {
@@ -306,7 +306,7 @@ class Cpp:
                     {
                         "data": {
                             "id": content,
-                            "properties": {"simpleName": content,"kind":kind},
+                            "properties": {"simpleName": content, "kind": kind},
                             "labels": [kind],
                         }
                     }
@@ -348,8 +348,8 @@ class Cpp:
                 location["file"] = re.sub("\|file:.+/", "", location["file"])[:-1]
                 location["position"] = "(" + location["position"]
                 break
-        
-        if len(location) == 0: 
+
+        if len(location) == 0:
             data = self.parsed["declarations"]
 
             for element in data:
@@ -362,21 +362,25 @@ class Cpp:
         return location
 
     def get_method_location(self, className, method):
-        data = self.parsed["functionDefinitions"]    
+        data = self.parsed["functionDefinitions"]
         location = {}
 
         for element in data:
-            if re.match("cpp\+method:\/\/\/{}\/{}".format(className, method), element[0]):
+            if re.match(
+                "cpp\+method:\/\/\/{}\/{}".format(className, method), element[0]
+            ):
                 location["file"], location["position"] = re.split("\(", element[1])
                 location["file"] = re.sub("\|file:.+/", "", location["file"])[:-1]
                 location["position"] = "(" + location["position"]
                 break
-        
-        if location is {}: 
+
+        if location is {}:
             data = self.parsed["declarations"]
 
             for element in data:
-                if re.match("cpp\+method:\/\/\/{}\/{}".format(className, method), element[0]):
+                if re.match(
+                    "cpp\+method:\/\/\/{}\/{}".format(className, method), element[0]
+                ):
                     location["file"], location["position"] = re.split("\(", element[1])
                     location["file"] = re.sub("\|file:.+/", "", location["file"])[:-1]
                     location["position"] = "(" + location["position"]
@@ -407,10 +411,8 @@ class Cpp:
                         loc = function["location"]["file"]
                     else:
                         loc = None
-                    
-                    parameters = self.get_parameters(
-                        function["functionName"],  loc
-                    )
+
+                    parameters = self.get_parameters(function["functionName"], loc)
                     i = 0
                     for parameter in element[1]["parameterTypes"]:
                         try:
@@ -456,7 +458,7 @@ class Cpp:
                 method["methodName"] = re.split(
                     "\(", elementParts[len(elementParts) - 1]
                 )[0]
-                #End Addition
+                # End Addition
 
                 method["location"] = self.get_method_location(
                     method["class"], method["methodName"]
@@ -467,19 +469,17 @@ class Cpp:
                     self.get_type_field(element[1]["returnType"]),
                 )
 
-                #Addition of second if statement
+                # Addition of second if statement
                 if element[1]["parameterTypes"]:
-                    if  "file" in method["location"].keys():
+                    if "file" in method["location"].keys():
                         parameters = self.get_parameters(
                             method["methodName"],
                             method["location"]["file"],
-                            method["class"]
+                            method["class"],
                         )
                     else:
                         parameters = self.get_parameters(
-                            method["methodName"],
-                            "none",
-                            method["class"]
+                            method["methodName"], "none", method["class"]
                         )
 
                     i = 0
@@ -577,7 +577,7 @@ class Cpp:
                 ):
                     return "string"
                 else:
-                    return re.sub("cpp\+class:\/+","", element[field]["decl"])
+                    return re.sub("cpp\+class:\/+", "", element[field]["decl"])
             if "baseType" in element[field].keys():
                 return element[field]["baseType"]
             if "modifiers" in element[field].keys():
@@ -595,7 +595,6 @@ class Cpp:
             find = "" + class_name + "/" + function
         else:
             find = function
-
 
         for element in data:
             if (
@@ -640,7 +639,7 @@ class Cpp:
 
                         for el in extends:
                             # Addition
-                            if(len(el) > 1):
+                            if len(el) > 1:
                                 if el[1] == element[0]:
                                     c["extends"] = re.sub("cpp\+class:\/+", "", el[0])
                                     break
@@ -678,7 +677,7 @@ class Cpp:
         return invokes
 
     def export(self, name):
-        
+
         for file in self.get_files():
             self.add_nodes("file", file)
         for primitve in self.primitives:
@@ -701,7 +700,7 @@ class Cpp:
             if c[1]["extends"] is not None:
                 self.add_edges("specializes", c)
             self.add_edges("contains", c)
-    
+
         methods = self.get_methods()
         for m in methods.items():
             self.add_nodes("method", m)

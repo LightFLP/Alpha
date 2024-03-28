@@ -10,7 +10,7 @@ class C:
     parsed = None
     path = None
 
-    def __init__(self, path, parsed,issues=None) -> None:
+    def __init__(self, path, parsed, issues=None) -> None:
         self.path = path
         self.parsed = parsed
         self.issues = issues
@@ -192,7 +192,7 @@ class C:
             case "type":
                 content = list(zip(content.keys(), content.values()))[0]
                 id = hash(content[0]) - hash(content[1]["name"])
-                if len(content[1]["type"])!=0:
+                if len(content[1]["type"]) != 0:
 
                     self.viz["elements"]["edges"].append(
                         {
@@ -307,7 +307,7 @@ class C:
                     {
                         "data": {
                             "id": content,
-                            "properties": {"simpleName": content,"kind":kind},
+                            "properties": {"simpleName": content, "kind": kind},
                             "labels": [kind],
                         }
                     }
@@ -406,9 +406,10 @@ class C:
             if re.match("c\+variable:", element[0]) and operator_name in element[0]:
                 variable = {}
                 variable["name"] = re.sub("c\+variable:.+/", "", element[0])
-                if self.get_type(
-                    element[1], self.get_type_field(element[1])
-                ) is not None:
+                if (
+                    self.get_type(element[1], self.get_type_field(element[1]))
+                    is not None
+                ):
                     variable["type"] = self.get_type(
                         element[1], self.get_type_field(element[1])
                     )

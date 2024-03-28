@@ -1,10 +1,10 @@
 import json
 
-def verify_integrity(path):
+def verify_integrity(path_of_viz_json):
     try:
-        with open(path, "r") as clean:
+        with open(path_of_viz_json, "r") as viz:
             # Parse the JSON data
-            parsed_data = json.load(clean)
+            parsed_data = json.load(viz)
             
             # Extract nodes and edges arrays
             elements = parsed_data.get("elements", {})
