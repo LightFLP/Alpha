@@ -1,0 +1,16 @@
+# Ignore compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore Rascal input data
+alpha-rascal/input/
+
+# Ignore Rascal model files
+alpha-rascal/models/
+
+# Ignore Rascal build artifacts
+alpha-rascal/target/
+
+# Ignore cached Python files in the pythonParsers directory
+/pythonParsers/__pycache__/
