@@ -1,4 +1,4 @@
-module cmake::AST
+module lang::cmake::AST
 
 data Build = build(list[Statement] statements);
 data Statement 

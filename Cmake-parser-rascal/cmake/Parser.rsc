@@ -1,8 +1,7 @@
-module cmake::Parser
+module lang::cmake::Parser
 
+import lang::cmake::Syntax;
 import ParseTree;
-
-import cmake::Syntax;
 
 public start[Build] parse(str src, loc path) = parse(#start[Build], src, path);
 public start[Build] parse(loc origin) = parse(#start[Build], origin);

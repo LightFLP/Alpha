@@ -1,14 +1,14 @@
-module cmake::PathExtractor
+module lang::cmake::PathExtractor
+
+import lang::cmake::AST;
+import lang::cmake::Parser;  
+import lang::cmake::Implode;
+import lang::shared::Utils;
 
 import Prelude;
 import ParseTree;
 import Location;
 import util::FileSystem;
-
-import cmake::AST;
-import cmake::Parser;  
-import cmake::Implode;
-import utils::CMakeUtils;
 
 map[str, map[str, list[str]]] macroPathByProject = ();              // key: project name, value: mappings from the macro to the location
 map[str, map[str, list[str]]] macroVariableByProject = ();          // key: project name, value: mappings from the macro to the variable values;
