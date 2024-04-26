@@ -34,13 +34,13 @@ class Cpp:
                     edge_id = (
                         hash(content[1]["class"])
                         + hash(content[0])
-                        + hash(content[1]["location"]["file"])
+                        + hash(content[1]["location"].get("file"))
                     )
                     self.viz["elements"]["edges"].append(
                         {
                             "data": {
                                 "id": edge_id,
-                                "source": content[1]["location"]["file"],
+                                "source": content[1]["location"].get("file"),
                                 "properties": {"weight": 1},
                                 "target": content[0],
                                 "labels": ["contains"],
@@ -89,13 +89,13 @@ class Cpp:
                         edge_id = (
                             hash(parameter["name"])
                             + hash(content[0])
-                            + hash(content[1]["location"]["file"])
+                            + hash(content[1]["location"].get("file"))
                         )
                         self.viz["elements"]["edges"].append(
                             {
                                 "data": {
                                     "id": edge_id,
-                                    "source": content[1]["location"]["file"],
+                                    "source": content[1]["location"].get("file"),
                                     "properties": {"weight": 1},
                                     "target": content[0] + "." + parameter["name"],
                                     "labels": ["contains"],
@@ -146,13 +146,13 @@ class Cpp:
                         edge_id = (
                             hash(variable["name"])
                             + hash(content[0])
-                            + hash(content[1]["location"]["file"])
+                            + hash(content[1]["location"].get("file"))
                         )
                         self.viz["elements"]["edges"].append(
                             {
                                 "data": {
                                     "id": edge_id,
-                                    "source": content[1]["location"]["file"],
+                                    "source": content[1]["location"].get("file"),
                                     "properties": {"weight": 1},
                                     "target": content[0] + "." + variable["name"],
                                     "labels": ["contains"],
@@ -176,12 +176,12 @@ class Cpp:
                 if content[1]["location"].get("file") is None:
                     pass
                 else:
-                    edge_id = hash(content[0]) + hash(content[1]["location"]["file"])
+                    edge_id = hash(content[0]) + hash(content[1]["location"].get("file"))
                     self.viz["elements"]["edges"].append(
                         {
                             "data": {
                                 "id": edge_id,
-                                "source": content[1]["location"]["file"],
+                                "source": content[1]["location"].get("file"),
                                 "properties": {"weight": 1},
                                 "target": content[0],
                                 "labels": [kind],
@@ -345,7 +345,7 @@ class Cpp:
         for element in data:
             if re.match("cpp\+function:", element[0]) and function in element[0]:
                 location["file"], location["position"] = re.split("\(", element[1])
-                location["file"] = re.sub("\|file:.+/", "", location["file"])[:-1]
+                location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
                 location["position"] = "(" + location["position"]
                 break
 
@@ -355,7 +355,7 @@ class Cpp:
             for element in data:
                 if re.match("cpp\+function:", element[0]) and function in element[0]:
                     location["file"], location["position"] = re.split("\(", element[1])
-                    location["file"] = re.sub("\|file:.+/", "", location["file"])[:-1]
+                    location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
                     location["position"] = "(" + location["position"]
                     break
 
@@ -370,7 +370,7 @@ class Cpp:
                 "cpp\+method:\/\/\/{}\/{}".format(className, method), element[0]
             ):
                 location["file"], location["position"] = re.split("\(", element[1])
-                location["file"] = re.sub("\|file:.+/", "", location["file"])[:-1]
+                location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
                 location["position"] = "(" + location["position"]
                 break
 
@@ -382,7 +382,7 @@ class Cpp:
                     "cpp\+method:\/\/\/{}\/{}".format(className, method), element[0]
                 ):
                     location["file"], location["position"] = re.split("\(", element[1])
-                    location["file"] = re.sub("\|file:.+/", "", location["file"])[:-1]
+                    location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
                     location["position"] = "(" + location["position"]
                     break
 
@@ -408,7 +408,7 @@ class Cpp:
 
                 if element[1]["parameterTypes"]:
                     if "file" in function["location"].keys():
-                        loc = function["location"]["file"]
+                        loc = function["location"].get("file")
                     else:
                         loc = None
 
@@ -474,7 +474,7 @@ class Cpp:
                     if "file" in method["location"].keys():
                         parameters = self.get_parameters(
                             method["methodName"],
-                            method["location"]["file"],
+                            method["location"].get("file"),
                             method["class"],
                         )
                     else:
@@ -486,10 +486,11 @@ class Cpp:
                     # Addition
                     if len(parameters) != 0:
                         for parameter in element[1]["parameterTypes"]:
-                            parameters[i]["type"] = self.get_parameter_type(
-                                parameter, self.get_type_field(parameter)
-                            )
-                            i += 1
+                            if i < len(parameters):
+                                parameters[i]["type"] = self.get_parameter_type(
+                                    parameter, self.get_type_field(parameter)
+                                )
+                                i += 1
 
                 method["parameters"] = parameters
                 method["variables"] = self.get_variables(element[0])
@@ -553,7 +554,7 @@ class Cpp:
     #         return element[1][field1][field2]
 
     def get_type(self, element, field):
-        if self.get_type_field(element[field]) is not None:
+        if self.get_type_field(element.get(field)) is not None:
             return self.get_type(element[field], self.get_type_field(element[field]))
         else:
             if field == "baseType":
@@ -618,7 +619,7 @@ class Cpp:
         for element in data:
             if re.match("cpp\+constructor:\/+\/" + c, element[0]) and c in element[0]:
                 location["file"], location["position"] = re.split("\(", element[1])
-                location["file"] = re.sub("\|file:.+/", "", location["file"])[:-1]
+                location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
                 location["position"] = "(" + location["position"]
                 break
         return location
@@ -657,23 +658,24 @@ class Cpp:
                     source = operation[0].replace(".", "/")
                 else:
                     source = operation[0]
-                if source in element[0]:
-                    invoke = {}
-                    invoke["source"] = operation[0]
-                    try:
-                        target = re.sub("cpp\+function:\/+.+\/", "", element[1])
-                        if re.match("cpp\+", target):
-                            target = re.sub("cpp\+method:\/+", "", element[1])
-                            target = target.replace("/", ".")
-                        target = re.split("\(", target)[0]
+                if len(element) > 1 :
+                    if source in element[0]:
+                        invoke = {}
+                        invoke["source"] = operation[0]
+                        try:
+                            target = re.sub("cpp\+function:\/+.+\/", "", element[1])
+                            if re.match("cpp\+", target):
+                                target = re.sub("cpp\+method:\/+", "", element[1])
+                                target = target.replace("/", ".")
+                            target = re.split("\(", target)[0]
 
-                        if target in operations.keys():
-                            invoke["target"] = target
-                            invokes.append(invoke)
-                    except:
+                            if target in operations.keys():
+                                invoke["target"] = target
+                                invokes.append(invoke)
+                        except:
+                            pass
+                    else:
                         pass
-                else:
-                    pass
         return invokes
 
     def export(self, name):

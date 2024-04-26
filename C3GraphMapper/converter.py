@@ -11,7 +11,7 @@ path_of_cleaned_model = (
     "C:\\Development\\TF\\Alpha\\alpha-rascal\\models\\composed\\Velox_clean.json"
 )
 path_of_vizualization = (
-    "C:\\Development\\TF\\Alpha\\alpha-rascal\\models\\composed\\Velox.copy.viz.json"
+    "C:\\Development\\TF\\Alpha\\alpha-rascal\\models\\composed\\Velox.viz.json"
 )
 
 
@@ -64,5 +64,5 @@ def main():
 
 main()
 
-result = verify_integrity(path_of_vizualization)
-print(f"Missing IDs: {result}")
+# result = verify_integrity(path_of_vizualization)
+# print(f"Missing IDs: {result}")
