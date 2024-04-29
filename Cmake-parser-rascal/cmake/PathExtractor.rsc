@@ -1,9 +1,9 @@
-module lang::cmake::PathExtractor
+module cmake::PathExtractor
 
-import lang::cmake::AST;
-import lang::cmake::Parser;  
-import lang::cmake::Implode;
-import lang::shared::Utils;
+import cmake::AST;
+import cmake::Parser;  
+import cmake::Implode;
+import cmake::Utils;
 
 import Prelude;
 import ParseTree;
@@ -33,7 +33,7 @@ public rel[loc, list[loc]] sourceToStdlibRel = {};
 list[loc] cmakeFiles = [];
 public loc ROOT = |unknown:///|;
 
-void extract(list[loc] skipCmakes, map[str, list[str]] rootMacroMap, loc toolchainCmake, loc rootCmake, list[loc] targets, loc codebaseRoot, loc externalDir, list[loc] targetsOriginal) {
+public void extract(list[loc] skipCmakes, map[str, list[str]] rootMacroMap, loc toolchainCmake, loc rootCmake, list[loc] targets, loc codebaseRoot, loc externalDir, list[loc] targetsOriginal) {
     ROOT = codebaseRoot;
     macroPathByProject += ("ROOT" : rootMacroMap + ("PROJECT_SOURCE_DIR" : [toolchainCmake.parent.uri])); // add a dummy project ROOT to initialize the map
     macroVariableByProject += ("ROOT" : ()); // add a dummy project ROOT to initialize the map

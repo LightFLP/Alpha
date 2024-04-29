@@ -1,4 +1,4 @@
-module lang::shared::Utils
+module cmake::Utils
 
 import Prelude;
 import Location;
