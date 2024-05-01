@@ -2,9 +2,8 @@ module Parser
 
 import IO;
 import Set;
+import List;
 import Relation;
-import Location;
-// import lang::cpp::AST;
 import lang::cpp::M3;
 
 
@@ -15,7 +14,7 @@ import utils::Persistence;
 import utils::Types;
 
 public void parseToComposedM3(str appName, bool saveAsJson, bool verbose, bool outputExtraData) {
-    list[loc] cppFiles = readFilePathsFromFile(CPP_FILES_LIST_LOC);
+    list[loc] cppFiles = loadFilePathsFromFile(CPP_FILES_LIST_LOC);
     processCppFiles(cppFiles, appName, saveAsJson, verbose, outputExtraData);
 }
 
@@ -23,7 +22,7 @@ public void processModelsFromDisk() {
     list[ClassEntity] loadedListOfClassEntities = loadExtractedModelsFromDisk();
     int modelCounter = 0;
     
-    println("Processing <size(loadedListOfClassEntities)> classEntities");
+    println("Processing <List::size(loadedListOfClassEntities)> classEntities");
 
     println("Processed <modelCounter> saved models and successfully created call graphs.");
 }
@@ -58,12 +57,12 @@ private void outputUnresolvedIncludes(str className, rel[loc directive, loc reso
         UnresolvedIncludesAsStrings = UnresolvedIncludesAsStrings + binaryRelation.directive.path;
     }
 
-    writeListToFile(className, UnresolvedIncludesAsStrings);
+    saveListToFile(className, UnresolvedIncludesAsStrings);
 }
 
 private ModelContainer extractModelsFromCppFile(loc filePath, bool verbose){
-    list[loc] includeFiles = readFilePathsFromFile(INCLUDE_FILES_LIST_LOC);
-    list[loc] stdLibFiles = readFilePathsFromFile(STD_LIBS_LIST_LOC);
+    list[loc] includeFiles = loadFilePathsFromFile(INCLUDE_FILES_LIST_LOC);
+    list[loc] stdLibFiles = loadFilePathsFromFile(STD_LIBS_LIST_LOC);
     
     if(verbose) {
         for(loc includeFile <- includeFiles) {

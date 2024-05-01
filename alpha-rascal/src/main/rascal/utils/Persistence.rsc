@@ -14,6 +14,10 @@ import utils::Common;
 import utils::Constants;
 import utils::Types;
 
+public void saveListToFile(str className, list[str] listToWrite) {
+    writeFileLines(MODELS_LOC + "<className>-missing-includes.json", listToWrite);
+}
+
 public void saveExtractedModelsToDisk(ModelContainer extractedModels, str className, bool saveAsJSon) {
     if(saveAsJSon) {
         saveExtractedM3ModelsAsJSON(extractedModels, className);
@@ -49,6 +53,14 @@ private void saveExtractedModelsAsBinaryFile(value val, str className) {
         println("Error writing <className>.bin: <msg> ");
     }
 }
+
+// load file paths from a text file
+public list[loc] loadFilePathsFromFile(loc filePath) {
+    list[str] fileLines = readFileLines(filePath);
+    return [ |file:///| + line | str line <- fileLines ];
+}
+
+
 
 public list[ClassEntity] loadExtractedModelsFromDisk() {
     println("Loading extracted models from disk");
