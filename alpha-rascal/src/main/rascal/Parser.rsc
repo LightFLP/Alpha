@@ -1,7 +1,9 @@
 module Parser
 
 import IO;
-import List;
+import Set;
+import Relation;
+import Location;
 // import lang::cpp::AST;
 import lang::cpp::M3;
 
@@ -12,9 +14,9 @@ import utils::Constants;
 import utils::Persistence;
 import utils::Types;
 
-public void parseToComposedM3(str appName, bool saveAsJson, bool verbose) {
+public void parseToComposedM3(str appName, bool saveAsJson, bool verbose, bool outputExtraData) {
     list[loc] cppFiles = readFilePathsFromFile(CPP_FILES_LIST_LOC);
-    processCppFiles(cppFiles, appName, saveAsJson, verbose);
+    processCppFiles(cppFiles, appName, saveAsJson, verbose, outputExtraData);
 }
 
 public void processModelsFromDisk() {
@@ -27,7 +29,7 @@ public void processModelsFromDisk() {
 }
 
 // Process a list of C++ files
-private void processCppFiles(list[loc] cppFilePaths, str appName, bool saveAsJson, bool verbose) {
+private void processCppFiles(list[loc] cppFilePaths, str appName, bool saveAsJson, bool verbose, bool outputExtraData) {
     set[M3] M3Models = {};
 
     for (loc cppFilePath <- cppFilePaths) {
@@ -35,10 +37,28 @@ private void processCppFiles(list[loc] cppFilePaths, str appName, bool saveAsJso
         extractedModels = extractModelsFromCppFile(cppFilePath, verbose);
         M3Models += extractedModels[0];
         saveExtractedModelsToDisk(extractedModels, className, saveAsJson);
+        
+        if(outputExtraData) {
+            outputUnresolvedIncludes(className, extractedModels[0].includeResolution);
+        }
+        
     }
 
     M3 composedModels = composeCppM3(|file:///|, M3Models);
     saveComposedExtractedM3ModelsAsJSON(composedModels, appName);
+}
+
+private void outputUnresolvedIncludes(str className, rel[loc directive, loc resolved] includeResolution) {
+    rel[loc directive, loc resolved] unresolvedIncludes = rangeR(includeResolution, {|unresolved:///|});
+    listOfUnresolvedIncludes = toList(unresolvedIncludes);
+
+    list[str] UnresolvedIncludesAsStrings = [];
+
+    for(tuple[loc directive, loc resolved] binaryRelation <- listOfUnresolvedIncludes) {
+        UnresolvedIncludesAsStrings = UnresolvedIncludesAsStrings + binaryRelation.directive.path;
+    }
+
+    writeListToFile(className, UnresolvedIncludesAsStrings);
 }
 
 private ModelContainer extractModelsFromCppFile(loc filePath, bool verbose){

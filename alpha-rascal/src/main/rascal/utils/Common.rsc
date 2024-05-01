@@ -3,10 +3,17 @@ module utils::Common
 import IO;
 import String;
 
+import utils::Constants;
+
 // Read file paths from a text file
 public list[loc] readFilePathsFromFile(loc filePath) {
     list[str] fileLines = readFileLines(filePath);
     return [ |file:///| + line | str line <- fileLines ];
+}
+
+// Read file paths from a text file
+public void writeListToFile(str className, list[str] listToWrite) {
+    writeFileLines(MODELS_LOC + "<className>-missing-includes.json", listToWrite);
 }
 
 // Parse file location and return the name of the class without the extension
