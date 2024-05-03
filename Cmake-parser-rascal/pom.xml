@@ -52,7 +52,7 @@
           <errorsAsWarnings>true</errorsAsWarnings>
           <bin>${project.build.outputDirectory}</bin>
           <srcs>
-            <src>${project.basedir}/src/main/rascal</src>
+            <src>${project.basedir}/src/cmake_parser</src>
           </srcs>
         </configuration>
       </plugin>

@@ -1,4 +1,4 @@
-module cmake::Syntax
+module cmake_parser::Syntax
 
 layout Layout = WhitespaceAndComment* !>> [\ \t\n\r#];
 lexical WhitespaceAndComment = [\ \t\n\r] | @category="Comment" "#" ![\n]* $;

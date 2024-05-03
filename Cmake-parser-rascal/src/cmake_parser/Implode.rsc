@@ -1,7 +1,7 @@
-module cmake::Implode
+module cmake_parser::Implode
 
-import cmake::Parser;
-import cmake::AST;
+import cmake_parser::Parser;
+import cmake_parser::AST;
 
 import ParseTree;
 import Node;

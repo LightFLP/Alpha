@@ -1,4 +1,4 @@
-module cmake::AST
+module cmake_parser::AST
 
 data Build = build(list[Statement] statements);
 data Statement 

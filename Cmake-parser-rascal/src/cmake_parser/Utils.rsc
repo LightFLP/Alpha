@@ -1,10 +1,16 @@
-module cmake::Utils
+module cmake_parser::Utils
 
 import Prelude;
 import Location;
 import util::FileSystem;
 import lang::json::IO;
 import util::Math;
+
+// Read file paths from a text file
+public list[loc] readFilePathsFromFile(loc filePath) {
+    list[str] fileLines = readFileLines(filePath);
+    return [ |file:///| + line | str line <- fileLines ];
+}
 
 // get all CMakeLists.txt, CMakelists.txt, *.cmake files under the target directories
 list[loc] getCmakeList(list[loc] targets){

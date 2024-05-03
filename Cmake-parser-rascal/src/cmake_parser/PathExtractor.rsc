@@ -1,9 +1,9 @@
-module cmake::PathExtractor
+module cmake_parser::PathExtractor
 
-import cmake::AST;
-import cmake::Parser;  
-import cmake::Implode;
-import cmake::Utils;
+import cmake_parser::AST;
+import cmake_parser::Parser;
+import cmake_parser::Implode;
+import cmake_parser::Utils;
 
 import Prelude;
 import ParseTree;
@@ -31,7 +31,16 @@ public rel[loc, set[loc]] cmakeToIncRel = {};
 public rel[loc, list[loc]] sourceToIncRel = {};
 public rel[loc, list[loc]] sourceToStdlibRel = {};
 list[loc] cmakeFiles = [];
-public loc ROOT = |unknown:///|;
+public loc ROOT = |file:///C:/Development/TF/Velox|;
+public loc TARGETS = |unknown:///|;
+
+public void automatedExract(){
+    // list[loc] cppFiles = readFilePathsFromFile();
+    list[loc] cmakeFileList = searchCmakeFile(ROOT);
+    for(file <- cmakeFileList){
+        println(file);
+    }
+}
 
 public void extract(list[loc] skipCmakes, map[str, list[str]] rootMacroMap, loc toolchainCmake, loc rootCmake, list[loc] targets, loc codebaseRoot, loc externalDir, list[loc] targetsOriginal) {
     ROOT = codebaseRoot;

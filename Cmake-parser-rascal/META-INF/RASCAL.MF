@@ -1,4 +1,4 @@
 Manifest-Version: 0.0.1
 Project-Name: cmake-parser-rascal
-Source: cmake
+Source: src\cmake_parser
 Require-Libraries:
