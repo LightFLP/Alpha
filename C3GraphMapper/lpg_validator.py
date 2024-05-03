@@ -1,10 +1,10 @@
 import json
 
-def verify_integrity(path_of_viz_json):
+def find_node_discrpenecies(lpg_path):
     try:
-        with open(path_of_viz_json, "r") as viz:
+        with open(lpg_path, "r") as lpg:
             # Parse the JSON data
-            parsed_data = json.load(viz)
+            parsed_data = json.load(lpg)
             
             # Extract nodes and edges arrays
             elements = parsed_data.get("elements", {})
@@ -18,8 +18,12 @@ def verify_integrity(path_of_viz_json):
             edge_target_ids = set(edge.get("data").get("target") for edge in edges)
             node_ids_in_edges = edge_source_ids | edge_target_ids
             
+            missing_ids = []
             # Find the difference between node_ids and edge_ids
-            missing_ids = list(node_ids.symmetric_difference(node_ids_in_edges))
+            for nodeId in node_ids_in_edges:
+                if(nodeId not in node_ids):
+                    missing_ids.append(nodeId)
+                
         
         return missing_ids
     except Exception as e:

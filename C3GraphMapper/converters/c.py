@@ -3,7 +3,6 @@ import re
 import os
 import json
 
-
 class C:
     primitives = ["int", "float", "void", "char", "string", "boolean"]
     viz = {"elements": {"nodes": [], "edges": []}}

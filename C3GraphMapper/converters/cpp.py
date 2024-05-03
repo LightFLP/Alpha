@@ -2,11 +2,12 @@ from copy import deepcopy
 import re
 import os
 import json
+from rascal_problem_loc_parser import parse_rascal_problem_location
 
 
 class Cpp:
     primitives = ["int", "float", "void", "char", "string", "boolean"]
-    viz = {"elements": {"nodes": [], "edges": []}}
+    lpg = {"elements": {"nodes": [], "edges": []}}
     parsed = None
     path = None
 
@@ -19,7 +20,7 @@ class Cpp:
         match kind:
             case "hasScript":
                 edge_id = hash(content[0])
-                self.viz["elements"]["edges"].append(
+                self.lpg["elements"]["edges"].append(
                     {
                         "data": {
                             "id": edge_id,
@@ -31,51 +32,53 @@ class Cpp:
                     }
                 )
                 try:
-                    edge_id = (
-                        hash(content[1]["class"])
-                        + hash(content[0])
-                        + hash(content[1]["location"].get("file"))
-                    )
-                    self.viz["elements"]["edges"].append(
-                        {
-                            "data": {
-                                "id": edge_id,
-                                "source": content[1]["location"].get("file"),
-                                "properties": {"weight": 1},
-                                "target": content[0],
-                                "labels": ["contains"],
+                    if(len(content[1]["location"]) != 0):
+                        edge_id = (
+                            hash(content[1]["class"])
+                            + hash(content[0])
+                            + hash(content[1]["location"].get("file"))
+                        )
+                        self.lpg["elements"]["edges"].append(
+                            {
+                                "data": {
+                                    "id": edge_id,
+                                    "source": content[1]["location"].get("file"),
+                                    "properties": {"weight": 1},
+                                    "target": content[0],
+                                    "labels": ["contains"],
+                                }
                             }
-                        }
-                    )
+                        )
                 except:
                     source = next(
                         item
-                        for item in self.viz["elements"]["edges"]
+                        for item in self.lpg["elements"]["edges"]
                         if item["data"]["target"] == content[1]["class"]
                         and "contains" in item["data"]["labels"]
                     )
-                    edge_id = (
-                        hash(content[1]["class"])
-                        + hash(content[0])
-                        + hash(source["data"]["source"])
-                    )
+                    if(source is not None):
+                        edge_id = (
+                            hash(content[1]["class"])
+                            + hash(content[0])
+                            + hash(source["data"]["source"])
+                        )
 
-                    self.viz["elements"]["edges"].append(
-                        {
-                            "data": {
-                                "id": edge_id,
-                                "source": source["data"]["source"],
-                                "properties": {"weight": 1},
-                                "target": content[0],
-                                "labels": ["contains"],
+                        self.lpg["elements"]["edges"].append(
+                            {
+                                "data": {
+                                    "id": edge_id,
+                                    "source": source["data"]["source"],
+                                    "properties": {"weight": 1},
+                                    "target": content[0],
+                                    "labels": ["contains"],
+                                }
                             }
-                        }
-                    )
+                        )
             case "hasParameter":
                 for parameter in content[1]["parameters"]:
                     if parameter is not None and parameter != "":
                         edge_id = hash(parameter["name"]) + hash(content[0])
-                        self.viz["elements"]["edges"].append(
+                        self.lpg["elements"]["edges"].append(
                             {
                                 "data": {
                                     "id": edge_id,
@@ -86,38 +89,41 @@ class Cpp:
                                 }
                             }
                         )
-                        edge_id = (
-                            hash(parameter["name"])
-                            + hash(content[0])
-                            + hash(content[1]["location"].get("file"))
-                        )
-                        self.viz["elements"]["edges"].append(
-                            {
-                                "data": {
-                                    "id": edge_id,
-                                    "source": content[1]["location"].get("file"),
-                                    "properties": {"weight": 1},
-                                    "target": content[0] + "." + parameter["name"],
-                                    "labels": ["contains"],
+
+                        if(len(content[1]["location"]) != 0):
+                            edge_id = (
+                                hash(parameter["name"])
+                                + hash(content[0])
+                                + hash(content[1]["location"].get("file"))
+                            )
+                            self.lpg["elements"]["edges"].append(
+                                {
+                                    "data": {
+                                        "id": edge_id,
+                                        "source": content[1]["location"].get("file"),
+                                        "properties": {"weight": 1},
+                                        "target": content[0] + "." + parameter["name"],
+                                        "labels": ["contains"],
+                                    }
                                 }
-                            }
-                        )
+                            )
             case "returnType":
-                edge_id = hash(content[0]) + hash(content[1]["returnType"])
-                self.viz["elements"]["edges"].append(
-                    {
-                        "data": {
-                            "id": edge_id,
-                            "source": content[0],
-                            "properties": {"weight": 1},
-                            "target": content[1]["returnType"],
-                            "labels": [kind],
+                if(content[0] is not None and content[1]["returnType"] is not None):        
+                    edge_id = hash(content[0]) + hash(content[1]["returnType"])
+                    self.lpg["elements"]["edges"].append(
+                        {
+                            "data": {
+                                "id": edge_id,
+                                "source": content[0],
+                                "properties": {"weight": 1},
+                                "target": content[1]["returnType"],
+                                "labels": [kind],
+                            }
                         }
-                    }
-                )
+                    )
             case "specializes":
                 edge_id = hash(content[0]) + hash(content[1]["extends"])
-                self.viz["elements"]["edges"].append(
+                self.lpg["elements"]["edges"].append(
                     {
                         "data": {
                             "id": edge_id,
@@ -132,7 +138,7 @@ class Cpp:
                 for variable in content[1]["variables"]:
                     if variable is not None and variable != "":
                         edge_id = hash(variable["name"]) + hash(content[0])
-                        self.viz["elements"]["edges"].append(
+                        self.lpg["elements"]["edges"].append(
                             {
                                 "data": {
                                     "id": edge_id,
@@ -143,25 +149,26 @@ class Cpp:
                                 }
                             }
                         )
-                        edge_id = (
-                            hash(variable["name"])
-                            + hash(content[0])
-                            + hash(content[1]["location"].get("file"))
-                        )
-                        self.viz["elements"]["edges"].append(
-                            {
-                                "data": {
-                                    "id": edge_id,
-                                    "source": content[1]["location"].get("file"),
-                                    "properties": {"weight": 1},
-                                    "target": content[0] + "." + variable["name"],
-                                    "labels": ["contains"],
+                        if(len(content[1]["location"]) != 0 and content[0] is not None):
+                            edge_id = (
+                                hash(variable["name"])
+                                + hash(content[0])
+                                + hash(content[1]["location"].get("file"))
+                            )
+                            self.lpg["elements"]["edges"].append(
+                                {
+                                    "data": {
+                                        "id": edge_id,
+                                        "source": content[1]["location"].get("file"),
+                                        "properties": {"weight": 1},
+                                        "target": content[0] + "." + variable["name"],
+                                        "labels": ["contains"],
+                                    }
                                 }
-                            }
-                        )
+                            )
             case "invokes":
                 edge_id = hash(content["target"]) + hash(content["source"])
-                self.viz["elements"]["edges"].append(
+                self.lpg["elements"]["edges"].append(
                     {
                         "data": {
                             "id": edge_id,
@@ -173,11 +180,11 @@ class Cpp:
                     }
                 )
             case "contains":
-                if content[1]["location"].get("file") is None:
+                if content[1]["location"].get("file") is None or content[1]["className"] == "" or len(content[1]["location"]) == 0:
                     pass
                 else:
                     edge_id = hash(content[0]) + hash(content[1]["location"].get("file"))
-                    self.viz["elements"]["edges"].append(
+                    self.lpg["elements"]["edges"].append(
                         {
                             "data": {
                                 "id": edge_id,
@@ -193,7 +200,7 @@ class Cpp:
                 id = hash(content[0]) - hash(content[1]["name"])
                 if len(content[1]["type"]) != 0:
 
-                    self.viz["elements"]["edges"].append(
+                    self.lpg["elements"]["edges"].append(
                         {
                             "data": {
                                 "id": id,
@@ -207,8 +214,18 @@ class Cpp:
 
     def add_nodes(self, kind, content):
         match kind:
+            case "problem":
+                self.lpg["elements"]["nodes"].append(
+                    {
+                        "data": {
+                            "id": content[1]["id"],
+                            "properties": {"message": content[1]["message"], "kind": kind},
+                            "labels": ["Problem"],
+                        }
+                    }
+                ) 
             case "file":
-                self.viz["elements"]["nodes"].append(
+                self.lpg["elements"]["nodes"].append(
                     {
                         "data": {
                             "id": content,
@@ -218,24 +235,24 @@ class Cpp:
                     }
                 )
             case "function":
-                vulnerabilities = []
-                if self.issues is not None:
-                    for issue in self.issues:
-                        if issue["target"]["script"] == content[0]:
-                            vulnerabilities.append(issue)
-                self.viz["elements"]["nodes"].append(
+                # vulnerabilities = []
+                # if self.issues is not None:
+                #     for issue in self.issues:
+                #         if issue["target"]["script"] == content[0]:
+                #             vulnerabilities.append(issue)
+                self.lpg["elements"]["nodes"].append(
                     {
                         "data": {
                             "id": content[0],
                             "properties": {
                                 "simpleName": content[1]["functionName"],
                                 "kind": kind,
-                                "vulnerabilities": vulnerabilities,
+                                # "vulnerabilities": vulnerabilities,
                                 "location": content[1]["location"],
                             },
                             "labels": [
                                 "Operation",
-                                "vulnerable" if len(vulnerabilities) > 0 else "",
+                                # "vulnerable" if len(vulnerabilities) > 0 else "",
                             ],
                         }
                     }
@@ -243,7 +260,7 @@ class Cpp:
             case "parameter":
                 for parameter in content[1]["parameters"]:
                     if parameter is not None and parameter != "":
-                        self.viz["elements"]["nodes"].append(
+                        self.lpg["elements"]["nodes"].append(
                             {
                                 "data": {
                                     "id": content[0] + "." + parameter["name"],
@@ -263,7 +280,7 @@ class Cpp:
                     for issue in self.issues:
                         if issue["target"]["script"] == content[0]:
                             vulnerabilities.append(issue)
-                self.viz["elements"]["nodes"].append(
+                self.lpg["elements"]["nodes"].append(
                     {
                         "data": {
                             "id": content[0],
@@ -285,7 +302,7 @@ class Cpp:
                     for issue in self.issues:
                         if issue["target"]["script"] == content[0]:
                             vulnerabilities.append(issue)
-                self.viz["elements"]["nodes"].append(
+                self.lpg["elements"]["nodes"].append(
                     {
                         "data": {
                             "id": content[0],
@@ -302,7 +319,7 @@ class Cpp:
                     }
                 )
             case "Primitive":
-                self.viz["elements"]["nodes"].append(
+                self.lpg["elements"]["nodes"].append(
                     {
                         "data": {
                             "id": content,
@@ -314,7 +331,7 @@ class Cpp:
             case "variable":
                 for variable in content[1]["variables"]:
                     if variable is not None and variable != "":
-                        self.viz["elements"]["nodes"].append(
+                        self.lpg["elements"]["nodes"].append(
                             {
                                 "data": {
                                     "id": content[0] + "." + variable["name"],
@@ -349,15 +366,15 @@ class Cpp:
                 location["position"] = "(" + location["position"]
                 break
 
-        if len(location) == 0:
-            data = self.parsed["declarations"]
+        # if len(location) == 0:
+        #     data = self.parsed["declarations"]
 
-            for element in data:
-                if re.match("cpp\+function:", element[0]) and function in element[0]:
-                    location["file"], location["position"] = re.split("\(", element[1])
-                    location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
-                    location["position"] = "(" + location["position"]
-                    break
+        #     for element in data:
+        #         if re.match("cpp\+function:", element[0]) and function in element[0]:
+        #             location["file"], location["position"] = re.split("\(", element[1])
+        #             location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
+        #             location["position"] = "(" + location["position"]
+        #             break
 
         return location
 
@@ -374,19 +391,31 @@ class Cpp:
                 location["position"] = "(" + location["position"]
                 break
 
-        if location is {}:
-            data = self.parsed["declarations"]
+        # if location is {}:
+        #     data = self.parsed["declarations"]
 
-            for element in data:
-                if re.match(
-                    "cpp\+method:\/\/\/{}\/{}".format(className, method), element[0]
-                ):
-                    location["file"], location["position"] = re.split("\(", element[1])
-                    location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
-                    location["position"] = "(" + location["position"]
-                    break
+        #     for element in data:
+        #         if re.match(
+        #             "cpp\+method:\/\/\/{}\/{}".format(className, method), element[0]
+        #         ):
+        #             location["file"], location["position"] = re.split("\(", element[1])
+        #             location["file"] = re.sub("\|file:.+/", "", location.get("file"))[:-1]
+        #             location["position"] = "(" + location["position"]
+        #             break
 
         return location
+    
+    def get_problems(self):
+        problems = {}
+        data = self.parsed["declaredType"]
+        for element in data:
+            if re.match("problem:", element[0]):
+                problem = dict()
+                parsed_info = parse_rascal_problem_location(element[0])
+                problem["id"] = parsed_info['id']
+                problem["message"] = parsed_info['message']
+                problems[problem["id"]] = problem
+        return problems
 
     def get_functions(self):
         functions = {}
@@ -453,7 +482,8 @@ class Cpp:
                 elementParts = re.split(
                     "\/", re.sub("cpp\+method:\/\/\/", "", element[0])
                 )
-                method["class"] = "/".join(elementParts[:-1])
+                # method["class"] = "/".join(elementParts[:-1])
+                method["class"] = elementParts[len(elementParts) - 2]
 
                 method["methodName"] = re.split(
                     "\(", elementParts[len(elementParts) - 1]
@@ -563,7 +593,8 @@ class Cpp:
                 if re.match("cpp\+classTemplate", element[field]):
                     return "string"
                 else:
-                    return re.sub("cpp\+class:\/+", "", element[field])
+                    elementParts = re.split("\/", re.sub("cpp\+class:\/\/\/", "", element[field]))
+                    return elementParts[len(elementParts) - 1]
             if field == "msg":
                 return None
 
@@ -627,27 +658,42 @@ class Cpp:
     def get_classes(self):
         data = self.parsed["containment"]
         classes = {}
+        problem_classes = {}
         for element in data:
-            if len(element) > 1:
-                if re.match("cpp\+class", element[0]):
-                    c = {}
-                    if re.match("cpp\+constructor", element[1]):
-                        c["className"] = re.split(
-                            "\(", re.sub("cpp\+constructor:\/+.+\/", "", element[1])
-                        )[0]
-                        extends = self.parsed["extends"]
-                        c["extends"] = None
+            if re.match("cpp\+class", element[0]):
+                c = {}                        
+                if re.match("cpp\+constructor", element[1]):
+                    c["className"] = re.split(
+                        "\(", re.sub("cpp\+constructor:\/+.+\/", "", element[1])
+                    )[0]
+                else:
+                    c["className"] = re.split(
+                        "\(", re.sub("cpp\+class:\/+.+\/", "", element[0])
+                    )[0]
 
-                        for el in extends:
-                            # Addition
-                            if len(el) > 1:
-                                if el[1] == element[0]:
-                                    c["extends"] = re.sub("cpp\+class:\/+", "", el[0])
-                                    break
-                        c["location"] = self.get_classes_location(c["className"])
-                        id = c["className"]
-                        classes[id] = c
-        return classes
+                extends = self.parsed["extends"]
+                c["extends"] = None
+
+                for el in extends:
+                    if re.match("problem:", el[0]):
+                        problem = dict()
+                        parsed_info = parse_rascal_problem_location(el[0])
+                        problem["id"] = parsed_info['id']
+                        problem["message"] = parsed_info['message']
+                        problem_classes[problem["id"]] = problem
+
+                    if el[1] == element[0]:
+
+                        if re.match("problem:", el[0]):
+                            parsed_info = parse_rascal_problem_location(el[0])
+                            c["extends"] = parsed_info["id"]
+                        else:
+                            c["extends"] = re.sub("cpp\+class:\/+", "", el[0])
+                        break
+                c["location"] = self.get_classes_location(c["className"])
+                id = c["className"]
+                classes[id] = c
+        return classes, problem_classes
 
     def get_invokes(self, operations):
         data = self.parsed["callGraph"]
@@ -684,6 +730,9 @@ class Cpp:
             self.add_nodes("file", file)
         for primitve in self.primitives:
             self.add_nodes("Primitive", primitve)
+        problems = self.get_problems()
+        for problem in problems.items():
+            self.add_nodes("problem", problem)
         functions = self.get_functions()
         for func in functions.items():
             self.add_nodes("function", func)
@@ -696,12 +745,16 @@ class Cpp:
             self.add_edges("returnType", func)
             self.add_edges("contains", func)
 
-        for c in self.get_classes().items():
-            print("class", c)
+        classes, problem_classes = self.get_classes()
+
+        for c in classes.items():
             self.add_nodes("class", c)
             if c[1]["extends"] is not None:
                 self.add_edges("specializes", c)
             self.add_edges("contains", c)
+        
+        for pc in problem_classes.items():
+            self.add_nodes("problem", pc)
 
         methods = self.get_methods()
         for m in methods.items():
@@ -714,9 +767,11 @@ class Cpp:
             if m[1]["variables"]:
                 self.add_nodes("variable", m)
                 self.add_edges("hasVariable", m)
+
         operations = deepcopy(methods)
         operations.update(functions)
         for invoke in self.get_invokes(operations):
             self.add_edges("invokes", invoke)
-        with open(os.path.join(self.path, f"{name}.viz.json"), "w") as f:
-            f.write(json.dumps(self.viz))
+
+        with open(os.path.join(self.path, f"{name}.lpg.json"), "w") as f:
+            f.write(json.dumps(self.lpg))
