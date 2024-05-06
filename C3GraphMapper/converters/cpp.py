@@ -280,44 +280,47 @@ class Cpp:
                     for issue in self.issues:
                         if issue["target"]["script"] == content[0]:
                             vulnerabilities.append(issue)
-                self.lpg["elements"]["nodes"].append(
-                    {
-                        "data": {
-                            "id": content[0],
-                            "properties": {
-                                "simpleName": content[1]["methodName"],
-                                "kind": kind,
-                                "vulnerabilities": vulnerabilities,
-                            },
-                            "labels": [
-                                "Operation",
-                                "vulnerable" if len(vulnerabilities) > 0 else "",
-                            ],
+                if(content[0] != "" and content[1] != ""):
+                    self.lpg["elements"]["nodes"].append(
+                        {
+                            "data": {
+                                "id": content[0],
+                                "properties": {
+                                    "simpleName": content[1]["methodName"],
+                                    "kind": kind,
+                                    "vulnerabilities": vulnerabilities,
+                                },
+                                "labels": [
+                                    "Operation",
+                                    # "vulnerable" if len(vulnerabilities) > 0 else "",
+                                ],
+                            }
                         }
-                    }
-                )
+                    )
             case "class":
                 vulnerabilities = []
                 if self.issues is not None:
                     for issue in self.issues:
                         if issue["target"]["script"] == content[0]:
                             vulnerabilities.append(issue)
-                self.lpg["elements"]["nodes"].append(
-                    {
-                        "data": {
-                            "id": content[0],
-                            "properties": {
-                                "simpleName": content[1]["className"],
-                                "kind": kind,
-                                "vulnerabilities": vulnerabilities,
-                            },
-                            "labels": [
-                                "Structure",
-                                "vulnerable" if len(vulnerabilities) > 0 else "",
-                            ],
+                
+                if(content[0] != "" and content[1] != ""):
+                    self.lpg["elements"]["nodes"].append(
+                        {
+                            "data": {
+                                "id": content[0],
+                                "properties": {
+                                    "simpleName": content[1]["className"],
+                                    "kind": kind,
+                                    "vulnerabilities": vulnerabilities,
+                                },
+                                "labels": [
+                                    "Structure",
+                                    # "vulnerable" if len(vulnerabilities) > 0 else "",
+                                ],
+                            }
                         }
-                    }
-                )
+                    )
             case "Primitive":
                 self.lpg["elements"]["nodes"].append(
                     {
