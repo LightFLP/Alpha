@@ -219,7 +219,7 @@ class Cpp:
                     {
                         "data": {
                             "id": content[1]["id"],
-                            "properties": {"message": content[1]["message"], "kind": kind},
+                            "properties": {"simpleName":content[1]["id"], "description": content[1]["message"], "kind": kind},
                             "labels": ["Problem"],
                         }
                     }

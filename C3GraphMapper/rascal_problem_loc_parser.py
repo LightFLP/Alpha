@@ -22,10 +22,16 @@ def parse_rascal_problem_location(rascal_problem_location):
             location_id, error_message = id_and_message
 
             error_message = error_message.replace("%20", " ")
+            error_message_list = error_message.split(":")
+            if len(error_message_list) == 2:
+                error_object = error_message_list[1].replace(" ", "")
+            else:
+                error_object = ""
 
             return {
                 'id': location_id,
                 'message': error_message,
+                'object': error_object
             }
         else:
             return None  # Invalid format
@@ -40,5 +46,6 @@ def parse_rascal_problem_location(rascal_problem_location):
 # if parsed_info:
 #     print(f"ID: {parsed_info['id']}")
 #     print(f"Message: {parsed_info['message']}")
+#     print(f"Object: {parsed_info['object']}")
 # else:
 #     print("Invalid Rascal location format.")
