@@ -14,8 +14,25 @@ import utils::Common;
 import utils::Constants;
 import utils::Types;
 
-public void saveListToFile(str className, list[str] listToWrite) {
-    writeFileLines(MODELS_LOC + "<className>-missing-includes.json", listToWrite);
+public Configuration loadConfiguration(){
+    Configuration defaultConfig = configuration("C:/Development/TF/Alpha/alpha-rascal/input", true, true, false, false);
+    loc configurationLoc = |cwd:///config.json|;
+
+    try {
+        println("Loading config file");
+        Configuration loadedConfig = readJSON(#Configuration, configurationLoc);
+        println("Successfully loaded config file");
+
+        return loadedConfig;
+    } catch IO(msg): {
+        println("[ERROR] Error loading config.json. Default configuration will be used.");
+        println("Error message: <msg>");    
+    }
+    return defaultConfig;
+}
+
+public void saveListToFile(str translationUnit, list[str] listToWrite) {
+    writeFileLines(|cwd:///| + MODELS_UNRESOLVED_FOLDER + "<translationUnit>-unresolved-includes.txt", listToWrite);
 }
 
 public void saveExtractedModelsToDisk(ModelContainer extractedModels, str className, bool saveAsJSon) {
@@ -28,29 +45,29 @@ public void saveExtractedModelsToDisk(ModelContainer extractedModels, str classN
 
 public void saveExtractedM3ModelsAsJSON(ModelContainer extractedModels, str className) {
     try {
-        writeJSON(MODELS_LOC + "<className>.json", extractedModels[0]);
+        writeJSON(|cwd:///| + MODELS_FOLDER + "<className>.json", extractedModels[0]);
         println("Successfully wrote <className>.json");
     } catch IO(msg) : {
-        println("Error writing <className>.json: <msg> ");
+        println("[ERROR] Error writing <className>.json: <msg> ");
     }
 }
 
 public void saveComposedExtractedM3ModelsAsJSON(M3 composedM3Models, str appName) {
     try {
-        writeJSON(MODELS_COMPOSED_LOC + "<appName>.json", composedM3Models);
+        writeJSON(|cwd:///| + MODELS_COMPOSED_FOLDER + "<appName>.json", composedM3Models);
         println("Successfully wrote <appName>.json");
     } catch IO(msg) : {
-        println("Error writing <appName>.json: <msg> ");
+        println("[ERROR] Error writing <appName>.json: <msg> ");
     }
 }
 
 // Function to save a ModelContainer to a file.
 private void saveExtractedModelsAsBinaryFile(value val, str className) {
     try {
-        writeBinaryValueFile(MODELS_LOC + "<className>.bin", val);
+        writeBinaryValueFile(|cwd:///| + MODELS_FOLDER + "<className>.bin", val);
         println("Successfully wrote <className>.bin");
     } catch IO(msg) : {
-        println("Error writing <className>.bin: <msg> ");
+        println("[ERROR] Error writing <className>.bin: <msg> ");
     }
 }
 
@@ -60,19 +77,17 @@ public list[loc] loadFilePathsFromFile(loc filePath) {
     return [ |file:///| + line | str line <- fileLines ];
 }
 
-
-
 public list[ClassEntity] loadExtractedModelsFromDisk() {
     println("Loading extracted models from disk");
 
-    set[loc] pathsOfModels = files(MODELS_LOC);
+    set[loc] pathsOfModels = files(|cwd:///| + MODELS_FOLDER);
 
     println("Found <Set::size(pathsOfModels)> extracted models from disk");
 
     list[ClassEntity] listOfClassEntities = [];
 
     for(loc modelsPath <- pathsOfModels) {
-        str className = getClassNameFromFilePath(modelsPath);
+        str className = getNameFromFilePath(modelsPath);
         ModelContainer modelContainer = loadExtractedModelsFromBinaryFile(modelsPath);
         ClassEntity tempClassEntity = classEntity(className, modelContainer);
         listOfClassEntities = listOfClassEntities + tempClassEntity;
@@ -80,8 +95,6 @@ public list[ClassEntity] loadExtractedModelsFromDisk() {
 
     return listOfClassEntities;    
 }
-
-
 
 // Function to read a ModelContainer from a file.
 private ModelContainer loadExtractedModelsFromBinaryFile(loc file) {

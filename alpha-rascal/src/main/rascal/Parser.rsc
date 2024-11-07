@@ -13,41 +13,69 @@ import utils::Constants;
 import utils::Persistence;
 import utils::Types;
 
-public void parseToComposedM3(str appName, bool saveAsJson, bool verbose, bool outputExtraData) {
-    list[loc] cppFiles = loadFilePathsFromFile(CPP_FILES_LIST_LOC);
-    processCppFiles(cppFiles, appName, saveAsJson, verbose, outputExtraData);
+private loc inputFolderAbsolutePath;
+private bool composeModels = true;
+private bool verbose = false;
+private bool saveFilesAsJson = true;
+private bool saveUnresolvedIncludes = false;
+
+
+void main(str moduleName = "") {
+    
+    Configuration loadedConfig = loadConfiguration();
+
+    inputFolderAbsolutePath = |file:///| + loadedConfig.inputFolderAbsolutePath;
+    saveFilesAsJson = loadedConfig.saveFilesAsJson;
+    composeModels = loadedConfig.composeModels;
+    verbose = loadedConfig.verbose;
+    saveUnresolvedIncludes = loadedConfig.saveUnresolvedIncludes;
+
+    if(moduleName == "") {
+        parseModuleListToComposedM3();
+    }
+    else {
+        parseCppListToM3(moduleName);
+    }
 }
 
-public void processModelsFromDisk() {
-    list[ClassEntity] loadedListOfClassEntities = loadExtractedModelsFromDisk();
-    int modelCounter = 0;
-    
-    println("Processing <List::size(loadedListOfClassEntities)> classEntities");
+public void parseCppListToM3(str m3FileName) {
+    list[loc] cppFiles = loadFilePathsFromFile(inputFolderAbsolutePath + CPP_FILES_LIST_FILE);
+    processCppFiles(cppFiles, m3FileName);
+}
 
-    println("Processed <modelCounter> saved models and successfully created call graphs.");
+public void parseModuleListToComposedM3() {
+    list[loc] listsOfInputFilesForModules = loadFilePathsFromFile(inputFolderAbsolutePath + MODULES_FILES_LIST_FILE);
+
+    for (loc listOfCppFilesInModule <- listsOfInputFilesForModules) {
+        str moduleName = getNameFromFilePath(listOfCppFilesInModule);
+        println("Processing module <moduleName>");
+        list[loc] cppFiles = loadFilePathsFromFile(listOfCppFilesInModule);
+        processCppFiles(cppFiles, moduleName);
+    }  
 }
 
 // Process a list of C++ files
-private void processCppFiles(list[loc] cppFilePaths, str appName, bool saveAsJson, bool verbose, bool outputExtraData) {
+private void processCppFiles(list[loc] cppFilePaths, str appName) {
     set[M3] M3Models = {};
 
     for (loc cppFilePath <- cppFilePaths) {
-        str className = getClassNameFromFilePath(cppFilePath);
-        extractedModels = extractModelsFromCppFile(cppFilePath, verbose);
+        str fileName = getNameFromFilePath(cppFilePath);
+        extractedModels = extractModelsFromCppFile(cppFilePath);
         M3Models += extractedModels[0];
-        saveExtractedModelsToDisk(extractedModels, className, saveAsJson);
+        saveExtractedModelsToDisk(extractedModels, fileName, saveFilesAsJson);
         
-        if(outputExtraData) {
-            outputUnresolvedIncludes(className, extractedModels[0].includeResolution);
+        if(saveUnresolvedIncludes) {
+            outputUnresolvedIncludes(fileName, extractedModels[0].includeResolution);
         }
         
     }
-
-    M3 composedModels = composeCppM3(|file:///|, M3Models);
-    saveComposedExtractedM3ModelsAsJSON(composedModels, appName);
+    if (composeModels) {
+        M3 composedModels = composeCppM3(|file:///|, M3Models);
+        saveComposedExtractedM3ModelsAsJSON(composedModels, appName);
+    }
 }
 
-private void outputUnresolvedIncludes(str className, rel[loc directive, loc resolved] includeResolution) {
+private void outputUnresolvedIncludes(str fileName, rel[loc directive, loc resolved] includeResolution) {
     rel[loc directive, loc resolved] unresolvedIncludes = rangeR(includeResolution, {|unresolved:///|});
     listOfUnresolvedIncludes = toList(unresolvedIncludes);
 
@@ -57,12 +85,12 @@ private void outputUnresolvedIncludes(str className, rel[loc directive, loc reso
         UnresolvedIncludesAsStrings = UnresolvedIncludesAsStrings + binaryRelation.directive.path;
     }
 
-    saveListToFile(className, UnresolvedIncludesAsStrings);
+    saveListToFile(fileName, UnresolvedIncludesAsStrings);
 }
 
-private ModelContainer extractModelsFromCppFile(loc filePath, bool verbose){
-    list[loc] includeFiles = loadFilePathsFromFile(INCLUDE_FILES_LIST_LOC);
-    list[loc] stdLibFiles = loadFilePathsFromFile(STD_LIBS_LIST_LOC);
+private ModelContainer extractModelsFromCppFile(loc filePath){
+    list[loc] includeFiles = loadFilePathsFromFile(inputFolderAbsolutePath + INCLUDE_FILES_LIST_LOC);
+    list[loc] stdLibFiles = loadFilePathsFromFile(inputFolderAbsolutePath + STD_LIBS_LIST_LOC);
     
     if(verbose) {
         for(loc includeFile <- includeFiles) {
@@ -77,29 +105,3 @@ private ModelContainer extractModelsFromCppFile(loc filePath, bool verbose){
     ModelContainer extractedModels = createM3AndAstFromCppFile(filePath, stdLib = stdLibFiles, includeDirs = includeFiles);
     return extractedModels;
 }
-
-// void processModelsFromDisk(list[ModelContainer] listOfModelContainers) {
-//     for(ModelContainer modelContainer <- modelsCollection) {
-//         rel[loc caller, loc callee] callGraph = extractCallGraph(models[1]);
-//         // for (entry <- callGraph){
-//         //     println("<entry[0]>  -\> <entry[1]>");
-//         // }
-//         writeValueToTextFile(callGraph);
-//     }
-// }
-
-// void testReadingModels() {
-//     loadedAST = readASTFromFile(|file:///C:/Development/TF/Alpha/alpha-rascal/models/AST/exampleAST.bin|);
-//     loadedM3 = readM3FromFile(|file:///C:/Development/TF/Alpha/alpha-rascal/models/M3/exampleM3.bin|);
-//     tuple[M3 loadedM3, Declaration loadedAST] models = <loadedM3, loadedAST>;
-//     list[tuple[M3, Declaration]] modelsCollection = [models];
-//     analyzeModelsFromDisk(modelsCollection);
-// }
-
-// int main(int testArgument=0) {
-//     loc filePathsFile = |file:///C:/Development/TF/Alpha/alpha-rascal/cpp-files.txt|;
-//     list[loc] cppFiles = readFilePathsFromFile(filePathsFile);
-//     extractModelsToDisk(cppFiles);
-//     //processCppFiles(cppFiles);
-//     return testArgument;
-// }

@@ -1,9 +1,10 @@
 module utils::Constants
 
-public loc ALPHA_RASCAL_ROOT_LOC = |file:///C:/Development/TF/Alpha/alpha-rascal|;
-public loc MODELS_LOC = ALPHA_RASCAL_ROOT_LOC + "/models";
-public loc MODELS_COMPOSED_LOC = ALPHA_RASCAL_ROOT_LOC + "/models/composed";
-
-public loc CPP_FILES_LIST_LOC = ALPHA_RASCAL_ROOT_LOC + "/input/cpp-files.txt";
-public loc INCLUDE_FILES_LIST_LOC = ALPHA_RASCAL_ROOT_LOC + "/input/include-dirs.txt";
-public loc STD_LIBS_LIST_LOC = ALPHA_RASCAL_ROOT_LOC + "/input/std-libs.txt";
+// Constant locations
+public str MODELS_FOLDER = "/models";
+public str MODELS_COMPOSED_FOLDER = "/models/composed";
+public str MODELS_UNRESOLVED_FOLDER = "/models/unresolved";
+public str CPP_FILES_LIST_FILE = "/cpp-files.txt";
+public str INCLUDE_FILES_LIST_LOC = "/include-dirs.txt";
+public str STD_LIBS_LIST_LOC = "/std-libs.txt";
+public str MODULES_FILES_LIST_FILE = "/module-files.txt";
