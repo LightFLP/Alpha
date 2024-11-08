@@ -37,6 +37,12 @@ void main(str moduleName = "") {
     verbose = loadedConfig.verbose;
     saveUnresolvedIncludes = loadedConfig.saveUnresolvedIncludes;
 
+    println("[CONFIG_VALUE] inputFolderAbsolutePath: <inputFolderAbsolutePath>");
+    println("[CONFIG_VALUE] saveFilesAsJson: <saveFilesAsJson>");
+    println("[CONFIG_VALUE] composeModels: <composeModels>");
+    println("[CONFIG_VALUE] verbose: <verbose>");
+    println("[CONFIG_VALUE] saveUnresolvedIncludes: <saveUnresolvedIncludes>");
+
     if(moduleName == "") {
         parseModuleListToComposedM3();
     }
@@ -78,10 +84,24 @@ public void parseModuleListToComposedM3() {
  */
 private void processCppFiles(list[loc] cppFilePaths, str appName) {
     set[M3] M3Models = {};
+    list[loc] includeFiles = loadFilePathsFromFile(inputFolderAbsolutePath + INCLUDE_FILES_LIST_LOC);
+    list[loc] stdLibFiles = loadFilePathsFromFile(inputFolderAbsolutePath + STD_LIBS_LIST_LOC);
+    
+    if(verbose) {
+        println("Using following includeDirs:");
+        for(loc includeFile <- includeFiles) {
+            println(includeFile);
+        }
+
+        println("Using following stdLibs:");
+        for(loc stdLibFile <- stdLibFiles) {
+            println(stdLibFile);
+        }
+    }
 
     for (loc cppFilePath <- cppFilePaths) {
         str fileName = getNameFromFilePath(cppFilePath);
-        extractedModels = extractModelsFromCppFile(cppFilePath);
+        extractedModels = extractModelsFromCppFile(cppFilePath, includeFiles, stdLibFiles);
         M3Models += extractedModels[0];
         saveExtractedModelsToDisk(extractedModels, fileName, saveFilesAsJson);
         
@@ -120,22 +140,12 @@ private void outputUnresolvedIncludes(str fileName, rel[loc directive, loc resol
  * Includes verbose output of include directories and standard library files if enabled.
  * 
  * @param filePath location of the C++ file to process.
+ * @param includeFiles list of folders containing the C++ included headers to process.
+ * @param stdLibFiles list of folders containing the standard libraries used in the analysed system.
  * @return ModelContainer holding the extracted M3 and AST models for the given C++ file.
  */
-private ModelContainer extractModelsFromCppFile(loc filePath){
-    list[loc] includeFiles = loadFilePathsFromFile(inputFolderAbsolutePath + INCLUDE_FILES_LIST_LOC);
-    list[loc] stdLibFiles = loadFilePathsFromFile(inputFolderAbsolutePath + STD_LIBS_LIST_LOC);
-    
-    if(verbose) {
-        for(loc includeFile <- includeFiles) {
-            println(includeFile);
-        }
-
-        for(loc stdLibFile <- stdLibFiles) {
-            println(stdLibFile);
-        }
-    }
-
+private ModelContainer extractModelsFromCppFile(loc filePath, list[loc] includeFiles, list[loc] stdLibFiles){
     ModelContainer extractedModels = createM3AndAstFromCppFile(filePath, stdLib = stdLibFiles, includeDirs = includeFiles);
+
     return extractedModels;
 }
