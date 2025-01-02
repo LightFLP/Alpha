@@ -20,6 +20,10 @@ private bool verbose = false;
 private bool saveFilesAsJson = true;
 private bool saveUnresolvedIncludes = false;
 
+//input files
+list[loc] includeFiles;
+list[loc] stdLibFiles;
+
 
 /**
  * Entry point of the module. Loads the configuration, sets up processing flags, 
@@ -42,6 +46,21 @@ void main(str moduleName = "") {
     println("[CONFIG_VALUE] composeModels: <composeModels>");
     println("[CONFIG_VALUE] verbose: <verbose>");
     println("[CONFIG_VALUE] saveUnresolvedIncludes: <saveUnresolvedIncludes>");
+    
+    includeFiles = loadFilePathsFromFile(inputFolderAbsolutePath + INCLUDE_FILES_LIST_LOC);
+    stdLibFiles = loadFilePathsFromFile(inputFolderAbsolutePath + STD_LIBS_LIST_LOC);
+    
+    if(verbose) {
+        println("Using following includeDirs:");
+        for(loc includeFile <- includeFiles) {
+            println(includeFile);
+        }
+
+        println("Using following stdLibs:");
+        for(loc stdLibFile <- stdLibFiles) {
+            println(stdLibFile);
+        }
+    }
 
     if(moduleName == "") {
         parseModuleListToComposedM3();
@@ -84,20 +103,6 @@ public void parseModuleListToComposedM3() {
  */
 private void processCppFiles(list[loc] cppFilePaths, str appName) {
     set[M3] M3Models = {};
-    list[loc] includeFiles = loadFilePathsFromFile(inputFolderAbsolutePath + INCLUDE_FILES_LIST_LOC);
-    list[loc] stdLibFiles = loadFilePathsFromFile(inputFolderAbsolutePath + STD_LIBS_LIST_LOC);
-    
-    if(verbose) {
-        println("Using following includeDirs:");
-        for(loc includeFile <- includeFiles) {
-            println(includeFile);
-        }
-
-        println("Using following stdLibs:");
-        for(loc stdLibFile <- stdLibFiles) {
-            println(stdLibFile);
-        }
-    }
 
     for (loc cppFilePath <- cppFilePaths) {
         str fileName = getNameFromFilePath(cppFilePath);
