@@ -1,0 +1,10 @@
+C:/Development/CalculatorCPP/main.cpp
+C:/Development/CalculatorCPP/Calculator.cpp
+C:/Development/CalculatorCPP/MathOperations.cpp
+C:/Development/CalculatorCPP/Display.cpp
+C:/Development/CalculatorCPP/InputHandler.cpp
+C:/Development/CalculatorCPP/Utils.cpp
+C:/Development/CalculatorCPP/Logger.cpp
+C:/Development/CalculatorCPP/Config.cpp
+C:/Development/CalculatorCPP/CalculatorTests.cpp
+C:/Development/CalculatorCPP/ExceptionHandler.cpp

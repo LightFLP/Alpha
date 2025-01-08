@@ -1,0 +1,5 @@
+C:/Development/CalculatorCPP/include
+C:/Development/CalculatorCPP/MathLib
+C:/Development/CalculatorCPP/DisplayLib
+C:/Development/CalculatorCPP/InputLib
+C:/Development/CalculatorCPP/UtilsLib
