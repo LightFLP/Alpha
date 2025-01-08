@@ -12,6 +12,7 @@ import utils::Common;
 import utils::Constants;
 import utils::Persistence;
 import utils::Types;
+import utils::PathMapper;
 
 // Configuration variables
 private loc inputFolderAbsolutePath;
@@ -19,6 +20,8 @@ private bool composeModels = true;
 private bool verbose = false;
 private bool saveFilesAsJson = true;
 private bool saveUnresolvedIncludes = false;
+private bool inDocker = true;
+private str localDrive = "C:";
 
 //input files
 list[loc] includeFiles;
@@ -40,15 +43,24 @@ void main(str moduleName = "") {
     composeModels = loadedConfig.composeModels;
     verbose = loadedConfig.verbose;
     saveUnresolvedIncludes = loadedConfig.saveUnresolvedIncludes;
+    inDocker = loadedConfig.inDocker;
+    localDrive = loadedConfig.localDrive;
 
     println("[CONFIG_VALUE] inputFolderAbsolutePath: <inputFolderAbsolutePath>");
     println("[CONFIG_VALUE] saveFilesAsJson: <saveFilesAsJson>");
     println("[CONFIG_VALUE] composeModels: <composeModels>");
     println("[CONFIG_VALUE] verbose: <verbose>");
+    println("[CONFIG_VALUE] inDocker: <inDocker>");
+    println("[CONFIG_VALUE] localDrive: <localDrive>");
     println("[CONFIG_VALUE] saveUnresolvedIncludes: <saveUnresolvedIncludes>");
-    
-    includeFiles = loadFilePathsFromFile(inputFolderAbsolutePath + INCLUDE_FILES_LIST_LOC);
-    stdLibFiles = loadFilePathsFromFile(inputFolderAbsolutePath + STD_LIBS_LIST_LOC);
+
+    if(inDocker) {
+        includeFiles = processInputPaths(inputFolderAbsolutePath + INCLUDE_FILES_LIST_LOC, localDrive);
+        stdLibFiles = processInputPaths(inputFolderAbsolutePath + STD_LIBS_LIST_LOC, localDrive);
+    } else {
+        includeFiles = loadFilePathsFromFile(inputFolderAbsolutePath + INCLUDE_FILES_LIST_LOC);
+        stdLibFiles = loadFilePathsFromFile(inputFolderAbsolutePath + STD_LIBS_LIST_LOC);
+    }
     
     if(verbose) {
         println("Using following includeDirs:");
@@ -76,7 +88,14 @@ void main(str moduleName = "") {
  * @param m3FileName name of the output file for the extracted M3 model.
  */
 public void parseCppListToM3(str m3FileName) {
-    list[loc] cppFiles = loadFilePathsFromFile(inputFolderAbsolutePath + CPP_FILES_LIST_FILE);
+    list[loc] cppFiles = [];
+
+    if (inDocker) {
+        cppFiles = processInputPaths(inputFolderAbsolutePath + CPP_FILES_LIST_FILE, localDrive);
+    } else {
+        cppFiles = loadFilePathsFromFile(inputFolderAbsolutePath + CPP_FILES_LIST_FILE);
+    }
+    
     processCppFiles(cppFiles, m3FileName);
 }
 
@@ -84,12 +103,25 @@ public void parseCppListToM3(str m3FileName) {
  * Parses a predefined list of modules, extracting and optionally composing M3 models for each module.
  */
 public void parseModuleListToComposedM3() {
-    list[loc] listsOfInputFilesForModules = loadFilePathsFromFile(inputFolderAbsolutePath + MODULES_FILES_LIST_FILE);
+    list[loc] listsOfInputFilesForModules = [];
 
+    if (inDocker) {
+        listsOfInputFilesForModules = processInputPaths(inputFolderAbsolutePath + MODULES_FILES_LIST_FILE, localDrive);
+    } else {
+        listsOfInputFilesForModules = loadFilePathsFromFile(inputFolderAbsolutePath + MODULES_FILES_LIST_FILE);
+    }
+    
     for (loc listOfCppFilesInModule <- listsOfInputFilesForModules) {
         str moduleName = getNameFromFilePath(listOfCppFilesInModule);
         println("Processing module <moduleName>");
-        list[loc] cppFiles = loadFilePathsFromFile(listOfCppFilesInModule);
+
+        list[loc] cppFiles = [];
+        
+        if (inDocker) {
+            cppFiles = processInputPaths(listOfCppFilesInModule, localDrive);
+        } else {
+            cppFiles = loadFilePathsFromFile(listOfCppFilesInModule);
+        }
         processCppFiles(cppFiles, moduleName);
     }  
 }

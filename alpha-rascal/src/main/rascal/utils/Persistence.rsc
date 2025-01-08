@@ -20,7 +20,7 @@ import utils::Types;
  * @return a `Configuration` instance containing the settings loaded from `config.json` or defaults.
  */
 public Configuration loadConfiguration(){
-    Configuration defaultConfig = configuration("C:/Development/TF/Alpha/alpha-rascal/input", true, true, false, false);
+    Configuration defaultConfig = configuration("|cwd:///input/|", true, true, false, false, "C:", false);
     loc configurationLoc = |cwd:///config.json|;
 
     try {
