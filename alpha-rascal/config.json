@@ -1,7 +1,9 @@
 {
-    "inputFolderAbsolutePath": "C:/Development/TF/Alpha/alpha-rascal/input/abstraction-levels",
+    "inputFolderAbsolutePath": "C:/Alpha/alpha-rascal/input",
     "saveFilesAsJson": true,
     "composeModels": true,
     "verbose": true,
+    "inDocker": false,
+    "localDrive": "C:",
     "saveUnresolvedIncludes": true
 }
