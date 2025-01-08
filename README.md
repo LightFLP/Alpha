@@ -31,6 +31,7 @@ Since Alpha is written in Rascal, to run it locally, you require Rascal in some 
 
 #### Running with the Rascal Jar (Recommended)
 
+1. **Download the Rascal standalone jar**: Download the jar file from [Rascal Download and Installation](https://www.rascal-mpl.org/docs/GettingStarted/DownloadAndInstallation/) in the `alpha-rascal` folder.
 1. **Start Rascal REPL**: Open a command line in the `alpha-rascal` folder and run the command `java -jar rascal-shell-stable.jar` to start a Rascal read-eval-print-loop (REPL). The repository contains the Rascal jar, but if you prefer, you can download the latest stable jar from the [Rascal website](https://www.rascal-mpl.org/docs/GettingStarted/DownloadAndInstallation/).
 2. **Import Alpha**: In the Rascal REPL, run `import Parser;` to import Alpha in the Rascal REPL. You've successfully started Alpha.
 
