@@ -1,0 +1,17 @@
+# Use an official Python runtime as the base image
+FROM maven
+
+# Set a working directory in the container
+WORKDIR /app
+
+# Copy the application code to the container
+COPY . .
+
+# Create input and models directories that will be used when binding volumes
+RUN mkdir -p /app/input /app/models
+
+# Set up the entrypoint to your CLI app
+ENTRYPOINT ["mvn", "rascal:console"]
+
+# Allow passing commands interactively
+CMD []
