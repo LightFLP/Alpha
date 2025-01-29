@@ -34,7 +34,7 @@
     <dependency>
         <groupId>org.rascalmpl</groupId>
         <artifactId>clair</artifactId>
-        <version>0.12.0</version>
+        <version>0.13.1</version>
     </dependency>
   </dependencies>
 
